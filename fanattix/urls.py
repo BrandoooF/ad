@@ -47,7 +47,7 @@ router.register('api/ticket-options', TicketOptionViewSet)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/api-token-auth/', CustomObtainAuthToken.as_view()),
-    path('api/events-created/<int:user_id>/', get_events_created, name="get_events_created"),
+    path('api/my-events/<int:user_id>/', get_events_created, name="get_events_created"),
     path('api/get-tickets/<int:user_id>/', get_tickets, name="get_tickets"),
 ]
 

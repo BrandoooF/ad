@@ -59,8 +59,8 @@ class Event(BaseEvent):
         img_format, imgstr = img_data.split(';base64,')
         ext = img_format.split('/')[-1]
 
-        data = ContentFile(base64.b64decode(imgstr), name=event.name + event.id + ext)  # You can save this as file instance.
-        return data
+        img_data = ContentFile(base64.b64decode(imgstr), name=event.name + ext)  # You can save this as file instance.
+        return img_data
 
     def __str__(self):
         return self.name
@@ -83,6 +83,14 @@ class EventOccurrence(BaseOccurrence):
             number_total=number_total
         )
         ticket_option.save()'''
+
+    def __str__(self):
+        return self.event.name
+
+
+class EventImage(models.Model):
+    event = models.ForeignKey(Event, on_delete=models.CASCADE)
+    file = models.ImageField(null=True, blank=True)
 
     def __str__(self):
         return self.event.name

@@ -9,6 +9,7 @@ from datetime import datetime
 
 from .serializers import EventOccurrenceSerializer, EventSerializer
 from tickets.API.serializers import TicketSerializer
+from service.functions import convert_and_save_image
 
 
 class EventViewSet(viewsets.ModelViewSet):
@@ -16,6 +17,11 @@ class EventViewSet(viewsets.ModelViewSet):
     queryset = Event.objects.all()
 
     def create(self, request, *args, **kwargs):
+        print(request.data['image'])
+        if request.data['image']:   # If an image string in base64 is present convert it to an image
+            img_data = convert_and_save_image(request.data['image'], request.data['name'])
+            request.data['image'] = img_data
+
         serializer = EventSerializer(data=request.data)
         if serializer.is_valid():
             obj = serializer.save()
@@ -35,6 +41,13 @@ class EventViewSet(viewsets.ModelViewSet):
             return Response(occ_serializer.errors)
 
         return Response(serializer.errors)
+
+
+@api_view(['GET',])
+def get_my_events(request, id, *args, **kwargs):
+    events = Event.objects.filter(id=id)
+    serializer = EventSerializer(events, many=True)
+    return serializer.data
 
 
 class EventOccurrenceViewSet(viewsets.ModelViewSet):
