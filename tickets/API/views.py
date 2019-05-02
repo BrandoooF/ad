@@ -1,18 +1,21 @@
 from rest_framework import viewsets, serializers
 from rest_framework.response import Response
-from .serializers import TicketSerializer, TicketOptionSerializer
+from .serializers import TicketSerializer, TicketDetailSerializer, TicketOptionSerializer
 from ..models import Ticket, TicketOption
 from rest_framework.decorators import api_view
 
 
 class TicketViewSet(viewsets.ModelViewSet):
-    user_info = serializers.SerializerMethodField()
-
     serializer_class = TicketSerializer
     queryset = Ticket.objects.all()
 
     def get_user_info(self):
         return self.get_user_info()
+
+
+class TicketDetailViewSet(viewsets.ModelViewSet):
+    serializer_class = TicketDetailSerializer
+    queryset = Ticket.objects.all()
 
 
 class TicketOptionViewSet(viewsets.ModelViewSet):
@@ -44,13 +47,27 @@ class TicketOptionViewSet(viewsets.ModelViewSet):
 
 
 @api_view(['POST', ])
-def purchase_ticket(request, user_id, event_id):
+def purchase_ticket(request):
+    from accounts.models import User
+    user = User.objects.get(id=request.data['user_id'])
+    ticket_option = TicketOption.objects.get(id=request.data['ticket_option_id'])
+
     ticket = Ticket.objects.create(
-        user=user_id,
-        event_occurrence=event_id
+        user=user,
+        ticket_option=ticket_option
     )
 
-    serializer = TicketSerializer(ticket, many=True)
-    return serializer.data
+    serializer = TicketSerializer(ticket)
+    return Response(serializer.data)
+
+
+@api_view(['GET', ])
+def get_purchased_tickets(request, user_id):
+    from accounts.models import User
+    user = User.objects.get(id=user_id)
+    tickets = Ticket.objects.filter(user=user)
+
+    serializer = TicketDetailSerializer(tickets, many=True)
+    return Response(serializer.data)
 
 

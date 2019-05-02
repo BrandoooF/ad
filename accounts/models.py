@@ -11,9 +11,9 @@ from rest_framework.authtoken.models import Token
 class User(AbstractUser):
     profile_img = models.ImageField(blank=True, null=True)
 
-    def get_events_created(self):
-        from events.models import EventOccurrence
-        return EventOccurrence.objects.filter(creator=self)
+    def get_my_events(self):
+        from events.models import Event
+        return Event.objects.filter(creator=self)
 
     def get_tickets(self):
         from tickets.models import Ticket

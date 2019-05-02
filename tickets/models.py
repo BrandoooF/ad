@@ -34,6 +34,10 @@ class Ticket(models.Model):
     def get_ticket_option(self):
         return self.ticket_option
 
+    def get_event_detail(self):
+        event = Event.objects.get(id=self.ticket_option.event.id)
+        return event
+
     def get_user(self):
         return self.user
 

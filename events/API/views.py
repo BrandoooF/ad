@@ -17,7 +17,6 @@ class EventViewSet(viewsets.ModelViewSet):
     queryset = Event.objects.all()
 
     def create(self, request, *args, **kwargs):
-        print(request.data['image'])
         if request.data['image']:   # If an image string in base64 is present convert it to an image
             img_data = convert_and_save_image(request.data['image'], request.data['name'])
             request.data['image'] = img_data
@@ -42,12 +41,43 @@ class EventViewSet(viewsets.ModelViewSet):
 
         return Response(serializer.errors)
 
+    def update(self, request, *args, **kwargs):
+        if request.data['image']:   # If an image string in base64 is present convert it to an image
+            img_data = convert_and_save_image(request.data['image'], request.data['name'])
+            request.data['image'] = img_data
 
+        # event = Event.objects.get(id=request.query_params['id'])
+
+        return super().update(request)
+
+        serializer = EventSerializer(event, data=request.data)
+        if serializer.is_valid():
+            obj = serializer.save()
+
+            '''occurrence = {
+                'creator': obj.creator.id,
+                'event': obj.id,
+                'start': datetime(2019, 12, 25),
+                'end': datetime(2019, 12, 25)
+            }
+
+            occ_serializer = EventOccurrenceSerializer(data=occurrence)
+            if occ_serializer.is_valid():
+                occ_serializer.save()
+                return Response({'event': serializer.data, 'occurrence': occ_serializer.data,
+                                 'message': 'Event Successfully Created'})
+            return Response(occ_serializer.errors)'''
+            return Response(serializer.data)
+
+        return Response(serializer.errors)
+
+'''
 @api_view(['GET',])
 def get_my_events(request, id, *args, **kwargs):
     events = Event.objects.filter(id=id)
     serializer = EventSerializer(events, many=True)
     return serializer.data
+    '''
 
 
 class EventOccurrenceViewSet(viewsets.ModelViewSet):
@@ -56,10 +86,10 @@ class EventOccurrenceViewSet(viewsets.ModelViewSet):
 
 
 @api_view(['POST', ])
-def purchase_ticket(request, user_id, event_id):
+def purchase_ticket(request, user_id, event_occurrence_id):
     ticket = Ticket.objects.create(
         user=user_id,
-        event_occurrence=event_id
+        event_occurrence=event_occurrence_id
     )
 
     serializer = TicketSerializer(ticket, many=True)
@@ -67,11 +97,11 @@ def purchase_ticket(request, user_id, event_id):
 
 
 @api_view(['GET', ])
-def get_events_created(request, user_id):
+def get_my_events(request, user_id):
     # user_id = user_id
     user = User.objects.get(id=user_id)
-    events = user.get_events_created()
-    serializer = EventOccurrenceSerializer(events, many=True)
+    events = user.get_my_events()
+    serializer = EventSerializer(events, many=True)
     return Response(serializer.data)
 
 

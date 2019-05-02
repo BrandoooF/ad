@@ -53,14 +53,8 @@ class Event(BaseEvent):
         )
         occurrence.save()
 
-    def convert_and_save_image(self, img_data, event):
-        import base64
-        from django.core.files.base import ContentFile
-        img_format, imgstr = img_data.split(';base64,')
-        ext = img_format.split('/')[-1]
-
-        img_data = ContentFile(base64.b64decode(imgstr), name=event.name + ext)  # You can save this as file instance.
-        return img_data
+    def get_occurrences(self):
+        return EventOccurrence.objects.filter(event=self.id)
 
     def __str__(self):
         return self.name
