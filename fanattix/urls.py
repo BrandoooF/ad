@@ -32,6 +32,7 @@ from events.API.views import (
     EventOccurrenceViewSet,
     get_my_events,
     get_tickets,
+    search_events_by_name,
 )
 from tickets.API.views import (
     TicketViewSet,
@@ -58,6 +59,7 @@ urlpatterns = [
     path('api/get-tickets/<int:user_id>/', get_tickets, name="get_tickets"),
     path('api/purchase-ticket/', purchase_ticket, name="purchase_tickets"),
     path('api/get-purchased-tickets/<int:user_id>/', get_purchased_tickets, name="get_purchased_tickets"),
+    path('api/search-events-by-name/', search_events_by_name, name="search-events-by-name"),
 ]
 
 urlpatterns += router.urls

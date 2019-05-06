@@ -112,6 +112,18 @@ def get_tickets(request, user_id):
     return Response(serializer.data)
 
 
+# ####### Search
+
+@api_view(['GET', ])
+def search_events_by_name(request):
+    event_name = request.query_params.get('name')
+    print(event_name)
+    events = Event.objects.filter(name__icontains=event_name)
+    print(events)
+    serializer = EventSerializer(events, many=True)
+    return Response(serializer.data)
+
+
 
 
 
