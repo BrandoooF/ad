@@ -9,7 +9,6 @@ from rest_framework.response import Response
 
 
 class CustomObtainAuthToken(ObtainAuthToken):
-
     def post(self, request, *args, **kwargs):
         response = super(CustomObtainAuthToken, self).post(request, *args, **kwargs)
         token = Token.objects.get(key=response.data['token'])
@@ -19,6 +18,35 @@ class CustomObtainAuthToken(ObtainAuthToken):
 class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     queryset = User.objects.all()
+
+    def create(self, request, *args, **kwargs):
+
+        #username = request.data['username']
+
+        content = {
+            'username': request.data['username'],
+            'password': request.data['password'],
+            'first_name': request.data['first_name'],
+            'last_name': request.data['last_name'],
+            'groups': {},
+        }
+
+        serializer = UserSerializer(data=content)
+
+        if serializer.is_valid():
+            user = User.objects.create_user(
+                username=content['username'],
+                password=content['password'],
+                first_name=content['first_name'],
+                last_name=content['last_name'],
+                email=request.data['email'],
+            )
+            user.save()
+            user_serializer = UserSerializer(user)
+            return Response(user_serializer.data)
+
+        else:
+            return Response(serializer.error_messages)
 
 
 class UserShortViewSet(viewsets.ModelViewSet):

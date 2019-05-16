@@ -7,6 +7,7 @@ from accounts.models import User
 
 class TicketOption(models.Model):
     name = models.CharField(max_length=60, default='Unnamed Ticket')
+    description = models.CharField(max_length=120, blank=True, null=True)
     url = models.URLField(null=True, blank=True)
     event = models.ForeignKey(Event, on_delete=models.CASCADE, blank=True, null=True)
     price = models.DecimalField(max_digits=8, decimal_places=2)
@@ -15,8 +16,16 @@ class TicketOption(models.Model):
     def get_number_purchased(self):
         return Ticket.objects.get(event_occurrence=self.id).count()
 
+    def get_event_detail(self):
+        event = Event.objects.get(id=self.event.id)
+        return event
+
     def get_number_left(self):
         return self.number_total - self.get_number_left()
+
+    def post_ticket_purchase(self):
+        self.number_total -= 1  # runs after each purchase
+        return self.number_total
 
     def get_event(self):
         return self.event

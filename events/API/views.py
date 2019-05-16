@@ -1,15 +1,26 @@
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from ..models import Event, EventOccurrence
+from ..models import Event, EventOccurrence, Category, Type
 from tickets.models import Ticket
 from accounts.models import User
+from django.db.models import FloatField, F
 
 from datetime import datetime
 
-from .serializers import EventOccurrenceSerializer, EventSerializer
+from .serializers import EventOccurrenceSerializer, EventSerializer, CategorySerializer, TypeSerializer
 from tickets.API.serializers import TicketSerializer
 from service.functions import convert_and_save_image
+
+
+class CategoryViewSet(viewsets.ModelViewSet):
+    serializer_class = CategorySerializer
+    queryset = Category.objects.all()
+
+
+class TypeViewSet(viewsets.ModelViewSet):
+    serializer_class = TypeSerializer
+    queryset = Type.objects.all()
 
 
 class EventViewSet(viewsets.ModelViewSet):
@@ -17,56 +28,29 @@ class EventViewSet(viewsets.ModelViewSet):
     queryset = Event.objects.all()
 
     def create(self, request, *args, **kwargs):
-        if request.data['image']:   # If an image string in base64 is present convert it to an image
+        if request.data['image'] is not None:  # If an image string in base64 is present convert it to an image
             img_data = convert_and_save_image(request.data['image'], request.data['name'])
             request.data['image'] = img_data
+            print(img_data)
 
         serializer = EventSerializer(data=request.data)
         if serializer.is_valid():
             obj = serializer.save()
 
-            occurrence = {
-                'creator': obj.creator.id,
-                'event': obj.id,
-                'start': datetime(2019, 12, 25),
-                'end': datetime(2019, 12, 25)
-            }
-
-            occ_serializer = EventOccurrenceSerializer(data=occurrence)
-            if occ_serializer.is_valid():
-                occ_serializer.save()
-                return Response({'event': serializer.data, 'occurrence': occ_serializer.data,
-                                 'message': 'Event Successfully Created'})
-            return Response(occ_serializer.errors)
+            return Response({'event': serializer.data, 'message': 'Event Successfully Saved'})
 
         return Response(serializer.errors)
 
     def update(self, request, *args, **kwargs):
-        if request.data['image']:   # If an image string in base64 is present convert it to an image
+        if request.data['image'] is not None:   # If an image string in base64 is present convert it to an image
             img_data = convert_and_save_image(request.data['image'], request.data['name'])
             request.data['image'] = img_data
-
-        # event = Event.objects.get(id=request.query_params['id'])
 
         return super().update(request)
 
         serializer = EventSerializer(event, data=request.data)
         if serializer.is_valid():
             obj = serializer.save()
-
-            '''occurrence = {
-                'creator': obj.creator.id,
-                'event': obj.id,
-                'start': datetime(2019, 12, 25),
-                'end': datetime(2019, 12, 25)
-            }
-
-            occ_serializer = EventOccurrenceSerializer(data=occurrence)
-            if occ_serializer.is_valid():
-                occ_serializer.save()
-                return Response({'event': serializer.data, 'occurrence': occ_serializer.data,
-                                 'message': 'Event Successfully Created'})
-            return Response(occ_serializer.errors)'''
             return Response(serializer.data)
 
         return Response(serializer.errors)
@@ -120,6 +104,38 @@ def search_events_by_name(request):
     print(event_name)
     events = Event.objects.filter(name__icontains=event_name)
     print(events)
+    serializer = EventSerializer(events, many=True)
+    return Response(serializer.data)
+
+
+@api_view(['POST', ])
+def search_events_by_CLD(request):  # CLD = Category, Location, Date
+    category_id = request.data['category']
+    # category = Category.objects.filter(id=category_id)
+    search_lat = request.data['lat']
+    search_lng = request.data['lng']
+    date = request.data['date']
+    print(request.data['date'])
+
+    # Filter Category
+    if request.data['category'] is not '':
+        events_category = Event.objects.filter(category_obj_id=category_id)
+    else:
+        events_category = Event.objects.all()
+
+    # Filter Date
+    if request.data['date'] is not '':
+        event_ids = EventOccurrence.objects.filter(start__lte=date).values_list('event_id', flat=True)
+        print(event_ids)
+        events_date = events_category.filter(id__in=event_ids)
+    else:
+        events_date = events_category
+
+    # OKAY check distance from long and order by that, then check distance from lat and order by that
+    # This will return events in order from distance of search
+    events = events_date.annotate(dist_lng=search_lng - F('lng')).order_by('-dist_lng')\
+        .annotate(dist_lat=search_lat - F('lat')).order_by('-dist_lat')
+
     serializer = EventSerializer(events, many=True)
     return Response(serializer.data)
 

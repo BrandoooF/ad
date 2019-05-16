@@ -30,17 +30,23 @@ from accounts.API.views import (
 from events.API.views import (
     EventViewSet,
     EventOccurrenceViewSet,
+    CategoryViewSet,
+    TypeViewSet,
     get_my_events,
     get_tickets,
     search_events_by_name,
+    search_events_by_CLD,
 )
 from tickets.API.views import (
     TicketViewSet,
     TicketDetailViewSet,
     TicketOptionViewSet,
+    TicketOptionDetailViewSet,
     purchase_ticket,
     get_purchased_tickets,
 )
+
+from stripeservice.API.views import get_connect_user_info, charge
 
 router = DefaultRouter()
 router.register('api/users', UserViewSet)
@@ -51,6 +57,10 @@ router.register('api/event-occurrences', EventOccurrenceViewSet)
 router.register('api/tickets', TicketViewSet)
 router.register('api/ticket-detail', TicketDetailViewSet)
 router.register('api/ticket-options', TicketOptionViewSet)
+router.register('api/ticket-option-detail', TicketOptionDetailViewSet)
+router.register('api/categories', CategoryViewSet)
+router.register('api/types', TypeViewSet)
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -60,6 +70,9 @@ urlpatterns = [
     path('api/purchase-ticket/', purchase_ticket, name="purchase_tickets"),
     path('api/get-purchased-tickets/<int:user_id>/', get_purchased_tickets, name="get_purchased_tickets"),
     path('api/search-events-by-name/', search_events_by_name, name="search-events-by-name"),
+    path('api/search-events-by-cld/', search_events_by_CLD, name="search-events-by-cld"),
+    path('api/get-connect-user-info/', get_connect_user_info, name="get_connect_user_info"),
+    path('api/charge/', charge, name="charge"),
 ]
 
 urlpatterns += router.urls

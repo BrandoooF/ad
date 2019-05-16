@@ -27,3 +27,18 @@ class TicketOptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = TicketOption
         fields = '__all__'
+
+
+class TicketOptionDetailSerializer(serializers.ModelSerializer):
+    event_detail = serializers.SerializerMethodField()
+
+    def get_event_detail(self, obj):
+        from events.API.serializers import EventSerializer
+        event = obj.get_event_detail()
+        serializer = EventSerializer(event)
+        return serializer.data
+
+    class Meta:
+        model = TicketOption
+        fields = '__all__'
+

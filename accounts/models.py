@@ -20,6 +20,19 @@ class User(AbstractUser):
         tickets = Ticket.objects.filter(user=self.id)
         return tickets
 
+    def connect_stripe_account(self, stripe_user_id, stripe_access_token, stripe_publishable_key, refresh_token, scope):
+        from stripeservice.models import StripeConnectedUser
+
+        connect = StripeConnectedUser.objects.create(
+            user=self,
+            stripe_user_id=stripe_user_id,
+            stripe_access_token=stripe_access_token,
+            stripe_publishable_key=stripe_publishable_key,
+            refresh_token=refresh_token,
+            scope=scope
+        )
+        connect.save()
+
     def __str__(self):
         return "%s %s" % (self.first_name, self.last_name)
 
@@ -28,6 +41,7 @@ class User(AbstractUser):
 def create_auth_token(sender, instance=None, created=False, **kwargs):
     if created:
         Token.objects.create(user=instance)
+        print('created token')
 
 
 @receiver(post_save, sender=User)

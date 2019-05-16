@@ -7,6 +7,29 @@ from accounts.models import User
 # Create your models here.
 
 
+class Category(models.Model):
+    name = models.CharField(max_length=50)
+
+    class Meta:
+        verbose_name_plural = "categories"
+
+    def get_events_in_category(self):
+        return Event.objects.filter(category=self)
+
+    def __str__(self):
+        return self.name
+
+
+class Type(models.Model):
+    name = models.CharField(max_length=50)
+
+    def get_events_of_type(self):
+        return Event.objects.filter(type=self)
+
+    def __str__(self):
+        return self.name
+
+
 class Event(BaseEvent):
     TYPE_CHOICES = (
         ('appearance', 'Appearance'),
@@ -22,22 +45,40 @@ class Event(BaseEvent):
         ('Tournament', 'Tournament'),
         ('Seminar', 'Seminar'),
         ('Race Event', 'Race Event'),
-        ('other', 'Other',)
+        ('Other', 'Other',)
     )
 
     CATEGORY_CHOICES = (
-        ('auto/boat/air', 'Auto/Boat/Air'),
-        ('business/professional', 'Business/Professional'),
-        ('charity/cause', 'Charity/Cause'),
-        ('community/Culture', 'Community/Culture'),
-        ('other', 'Other')
+        ('Auto/Boat/Air', 'Auto/Boat/Air'),
+        ('Business/Professional', 'Business/Professional'),
+        ('Charity/Cause', 'Charity/Cause'),
+        ('Community/Culture', 'Community/Culture'),
+        ('Education', 'Education'),
+        ('Fashion/Makeup/Beauty', 'Fashion/Makeup/Beauty'),
+        ('Film/Media', 'Film/Media'),
+        ('Food/Drink', 'Food/Drink'),
+        ('Politics/Government', 'Politics/Government'),
+        ('Health/Wellness', 'Health/Wellness'),
+        ('Hobbies', 'Hobbies'),
+        ('Home/Gardening/Lifestyle', 'Home/Gardening/Lifestyle'),
+        ('School', 'School'),
+        ('Science/Technology/Engineering/Math', 'Science/Technology/Engineering/Math'),
+        ('Seasonal/Holiday', 'Seasonal/Holiday'),
+        ('Sports/Fitness', 'Sports/Fitness'),
+        ('Outdoor/Travel', 'Outdoor/Travel'),
+        ('Other', 'Other')
     )
 
     name = models.CharField(max_length=70)
     description = RichTextField()
-    type = models.CharField(max_length=30, choices=TYPE_CHOICES, default='other')
-    category = models.CharField(max_length=30, choices=CATEGORY_CHOICES, default='other')
+    # type = models.CharField(max_length=30, choices=TYPE_CHOICES, default='Other')
+    type_obj = models.ForeignKey(Type, on_delete=models.DO_NOTHING)
+    # category = models.CharField(max_length=30, choices=CATEGORY_CHOICES, default='Other')
+    category_obj = models.ForeignKey(Category, on_delete=models.DO_NOTHING)
     location = models.TextField()
+    lat = models.FloatField(blank=True, null=True)
+    lng = models.FloatField(blank=True, null=True)
+    organizers = models.CharField(max_length=70, blank=True, null=True)
     venue = models.TextField()
     image = models.ImageField(null=True, blank=True)
     creator = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
@@ -55,6 +96,27 @@ class Event(BaseEvent):
 
     def get_occurrences(self):
         return EventOccurrence.objects.filter(event=self.id)
+
+    def get_category(self):
+        # cat = Category.objects.get(id=self.category_obj.id)
+        return self.category_obj
+
+    def get_type(self):
+        # type_obj = Type.objects.get(id=self.type_obj.id)
+        return self.type_obj
+
+    @staticmethod
+    def filter_from_distance(miles, lat, lng):
+        degrees = (miles / 69)
+        max_lat = lat + degrees
+        min_lat = lat - degrees
+
+        max_lng = lng + ((90 - lat)*degrees)
+        min_lng = lng - ((90 - lat)*degrees)
+
+        near_by = Event.objects.filter(lat__lte=max_lat, lat__gte=min_lat, lng__lte=max_lng, lng__gte=min_lng)
+
+        return near_by
 
     def __str__(self):
         return self.name
@@ -88,3 +150,7 @@ class EventImage(models.Model):
 
     def __str__(self):
         return self.event.name
+
+
+
+

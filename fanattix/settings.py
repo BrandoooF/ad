@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'tickets',
     'corsheaders',
     'service',
+    'stripeservice',
 ]
 
 MIDDLEWARE = [
@@ -142,3 +143,14 @@ MEDIA_URL = '/media/'
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+# Stripe Keys
+
+STRIPE_PUBLISHABLE_KEY = 'ca_EznEo94DHXgBpOYVsmdY9My6WsAyz38o'
+STRIPE_CLIENT_SECRET = 'sk_test_osfiwJk7tNsOBUBNCMt8Rhk400xBJv6uG5'  # This works with Connect
+
+STRIPE_TOKEN_ENDPOINT = 'https://connect.stripe.com/oauth/token'
+
+STRIPE_FIXED_FEE = 200  # OUR STANDARD FEE TO CONNECTED ACCOUNT
+STRIPE_PERCENTAGE_FEE = .05  # OUR PERCENTAGE FEE TO CONNECTED ACCOUNT

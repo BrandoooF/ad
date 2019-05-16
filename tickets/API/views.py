@@ -1,6 +1,6 @@
 from rest_framework import viewsets, serializers
 from rest_framework.response import Response
-from .serializers import TicketSerializer, TicketDetailSerializer, TicketOptionSerializer
+from .serializers import TicketSerializer, TicketDetailSerializer, TicketOptionSerializer, TicketOptionDetailSerializer
 from ..models import Ticket, TicketOption
 from rest_framework.decorators import api_view
 
@@ -46,18 +46,28 @@ class TicketOptionViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
+class TicketOptionDetailViewSet(viewsets.ModelViewSet):
+    serializer_class = TicketOptionDetailSerializer
+    queryset = TicketOption.objects.all()
+
+
 @api_view(['POST', ])
 def purchase_ticket(request):
     from accounts.models import User
     user = User.objects.get(id=request.data['user_id'])
+    quantity = request.data['quantity']
     ticket_option = TicketOption.objects.get(id=request.data['ticket_option_id'])
 
-    ticket = Ticket.objects.create(
-        user=user,
-        ticket_option=ticket_option
-    )
+    for x in range(quantity):
+        ticket = Ticket.objects.create(
+            user=user,
+            ticket_option=ticket_option
+        )
+
+        print(x)
 
     serializer = TicketSerializer(ticket)
+
     return Response(serializer.data)
 
 
