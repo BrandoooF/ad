@@ -24,6 +24,15 @@ class TicketDetailSerializer(serializers.ModelSerializer):
 
 
 class TicketOptionSerializer(serializers.ModelSerializer):
+    tickets_sold = serializers.SerializerMethodField()
+    dollar_amount_sold = serializers.SerializerMethodField()
+
+    def get_tickets_sold(self, obj):
+        return obj.get_number_tickets_sold()
+
+    def get_dollar_amount_sold(self, obj):
+        return obj.get_dollar_amount_sold()
+
     class Meta:
         model = TicketOption
         fields = '__all__'
@@ -31,12 +40,19 @@ class TicketOptionSerializer(serializers.ModelSerializer):
 
 class TicketOptionDetailSerializer(serializers.ModelSerializer):
     event_detail = serializers.SerializerMethodField()
+    tickets_sold = serializers.SerializerMethodField()
 
     def get_event_detail(self, obj):
         from events.API.serializers import EventSerializer
         event = obj.get_event_detail()
         serializer = EventSerializer(event)
         return serializer.data
+
+    def get_tickets_sold(self, obj):
+        return obj.get_number_tickets_sold()
+
+    def get_dollar_amount_sold(self, obj):
+        return obj.get_dollar_amount_sold()
 
     class Meta:
         model = TicketOption

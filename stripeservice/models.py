@@ -13,3 +13,11 @@ class StripeConnectedUser(models.Model):
 
     def __str__(self):
         return self.user.username
+
+
+class StripeToken(models.Model):
+    user = models.ForeignKey('accounts.User', on_delete=models.SET_NULL, blank=True, null=True)
+    customer_id = models.CharField(max_length=90)
+
+    def __str__(self):
+        return self.user.email

@@ -36,6 +36,8 @@ from events.API.views import (
     get_tickets,
     search_events_by_name,
     search_events_by_CLD,
+    send_email_to_patrons,
+    get_free_events
 )
 from tickets.API.views import (
     TicketViewSet,
@@ -71,8 +73,10 @@ urlpatterns = [
     path('api/get-purchased-tickets/<int:user_id>/', get_purchased_tickets, name="get_purchased_tickets"),
     path('api/search-events-by-name/', search_events_by_name, name="search-events-by-name"),
     path('api/search-events-by-cld/', search_events_by_CLD, name="search-events-by-cld"),
+    path('api/get-free-events/', get_free_events, name="get_free_events"),
     path('api/get-connect-user-info/', get_connect_user_info, name="get_connect_user_info"),
     path('api/charge/', charge, name="charge"),
+    path('api/email-patrons/', send_email_to_patrons, name="send_email_to_patrons")
 ]
 
 urlpatterns += router.urls

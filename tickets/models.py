@@ -2,6 +2,12 @@ from django.db import models
 from events.models import EventOccurrence, Event
 from accounts.models import User
 
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+
+from django.db.models import Sum, Count
+
 # Create your models here.
 
 
@@ -29,6 +35,36 @@ class TicketOption(models.Model):
 
     def get_event(self):
         return self.event
+
+    def assign_ticket(self, user_id, quantity):
+        user = User.objects.get(id=user_id)
+        quantity = quantity
+        # ticket_option = TicketOption.objects.get(id=ticket_option_id)
+
+        for x in range(quantity):
+            ticket = Ticket.objects.create(
+                user=user,
+                ticket_option=self
+            )
+
+            print(x)
+
+        subject = 'Your Tickets from Fanattix'
+        html_message = render_to_string('mail/ticket.html', {'event': self.event, 'ticket_option': self})
+        plain_message = strip_tags(html_message)
+        from_email = 'brandon.f.fallings@gmail.com'
+        to_email = user.email
+        send_mail(subject, plain_message, from_email, [to_email], html_message=html_message)  # send the email
+
+        return ticket
+
+    def get_number_tickets_sold(self):
+        ticket_count = Ticket.objects.filter(ticket_option=self).count()
+        return ticket_count
+
+    def get_dollar_amount_sold(self):
+        dollar_amount_sold = Ticket.objects.filter(ticket_option=self).count() * self.price
+        return dollar_amount_sold
 
 
 class Ticket(models.Model):

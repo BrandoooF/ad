@@ -154,3 +154,11 @@ STRIPE_TOKEN_ENDPOINT = 'https://connect.stripe.com/oauth/token'
 
 STRIPE_FIXED_FEE = 200  # OUR STANDARD FEE TO CONNECTED ACCOUNT
 STRIPE_PERCENTAGE_FEE = .05  # OUR PERCENTAGE FEE TO CONNECTED ACCOUNT
+
+# EMAIL
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'brandon.f.fallings@gmail.com'
+EMAIL_HOST_PASSWORD = 'Yasmen777'

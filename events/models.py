@@ -82,6 +82,8 @@ class Event(BaseEvent):
     venue = models.TextField()
     image = models.ImageField(null=True, blank=True)
     creator = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
+    is_inactive = models.BooleanField(default=True)
+    is_draft = models.BooleanField(default=False)
 
     def create_occurrence(self, creator_id, event_id, start, end, repeat):
         creator = User.objects.get(id=creator_id)
@@ -117,6 +119,13 @@ class Event(BaseEvent):
         near_by = Event.objects.filter(lat__lte=max_lat, lat__gte=min_lat, lng__lte=max_lng, lng__gte=min_lng)
 
         return near_by
+
+    def get_total_tickets_sold(self):
+        from tickets.models import TicketOption, Ticket
+        ticket_option_ids = TicketOption.objects.filter(event=self).values_list('id', flat=True)
+        ticket_count = Ticket.objects.filter(ticket_option_id__in=ticket_option_ids).count()
+        
+        return ticket_count
 
     def __str__(self):
         return self.name

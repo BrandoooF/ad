@@ -37,6 +37,7 @@ class EventSerializer(serializers.ModelSerializer):
     occurrences = serializers.SerializerMethodField()
     category_detail = serializers.SerializerMethodField()
     type_detail = serializers.SerializerMethodField()
+    total_tickets_sold = serializers.SerializerMethodField()
 
     def get_ticket_options(self, obj):
         ticket_options = TicketOption.objects.filter(event=obj)
@@ -57,6 +58,9 @@ class EventSerializer(serializers.ModelSerializer):
         type_obj = obj.get_type()
         serializer = TypeSerializer(type_obj)
         return serializer.data
+
+    def get_total_tickets_sold(self, obj):
+        return obj.get_total_tickets_sold()
 
     class Meta:
         model = Event

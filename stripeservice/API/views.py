@@ -1,6 +1,9 @@
 from rest_framework import viewsets, status
 from accounts.models import User
 from ..models import StripeConnectedUser
+from tickets.API.views import purchase_ticket
+from tickets.models import TicketOption
+from tickets.API.serializers import TicketSerializer
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
@@ -12,8 +15,6 @@ from django.conf import settings
 
 import stripe
 stripe.api_key = settings.STRIPE_CLIENT_SECRET
-
-
 
 
 @api_view(['POST'])
@@ -65,9 +66,30 @@ def charge(request):
         currency="usd",
         source=source_token,
         transfer_data={
-            "amount": payout_amount,  # amount in CENTS e.g 200 = $2.00 /// This is how we create our charge, NEED FEE CALCULATIONS
+            # amount in CENTS e.g 200 = $2.00 /// This is how we create our charge, NEED FEE CALCULATIONS
+            "amount": payout_amount,
             "destination": destination,
         }
     )
 
-    return Response({'response': charge_request})
+    # Then give user their ticket
+    # This function comes from tickets.API.views import purchase_ticket
+    ticket_option = TicketOption.objects.get(id=request.data['ticket_option_id'])
+    assigned_ticket = ticket_option.assign_ticket(user_id=request.data['user_id'], quantity=request.data['quantity'])
+    serializer = TicketSerializer(assigned_ticket)
+    return Response({'response': charge_request, 'ticket': serializer.data})
+
+
+@api_view(['POST'],)
+def save_card(request):
+    token = request.data['token']
+    user_id = request.data['user_id']
+    user = User.objects.get(id=user_id)
+    user_email = user.email
+
+    customer = stripe.Customer.create(
+        source=token,
+        email=user_email
+    )
+
+    return Response({'response': customer})

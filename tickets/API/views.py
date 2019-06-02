@@ -63,12 +63,9 @@ def purchase_ticket(request):
             user=user,
             ticket_option=ticket_option
         )
-
         print(x)
 
-    serializer = TicketSerializer(ticket)
-
-    return Response(serializer.data)
+    return ticket
 
 
 @api_view(['GET', ])
