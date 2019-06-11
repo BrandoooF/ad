@@ -21,3 +21,12 @@ class StripeToken(models.Model):
 
     def __str__(self):
         return self.user.email
+
+
+class StripeSavedPaymentMethod(models.Model):
+    user = models.ForeignKey('accounts.User', on_delete=models.CASCADE, blank=True, null=True)
+    token = models.CharField(max_length=90)
+    last4 = models.CharField(max_length=5, blank=True, null=True)
+
+    def __str__(self):
+        return self.user.email

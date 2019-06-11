@@ -14,7 +14,7 @@ class Category(models.Model):
         verbose_name_plural = "categories"
 
     def get_events_in_category(self):
-        return Event.objects.filter(category=self)
+        return Event.objects.filter(category_obj=self)
 
     def __str__(self):
         return self.name

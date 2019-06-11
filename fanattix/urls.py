@@ -14,7 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -37,7 +37,8 @@ from events.API.views import (
     search_events_by_name,
     search_events_by_CLD,
     send_email_to_patrons,
-    get_free_events
+    get_free_events,
+    get_events_by_category,
 )
 from tickets.API.views import (
     TicketViewSet,
@@ -48,7 +49,15 @@ from tickets.API.views import (
     get_purchased_tickets,
 )
 
-from stripeservice.API.views import get_connect_user_info, charge
+from stripeservice.API.views import (
+    get_connect_user_info,
+    charge,
+    save_card,
+    StripeSavedPaymentMethodViewSet,
+    get_payment_methods,
+    StripeConnectedUserViewSet,
+    get_connected_user,
+)
 
 router = DefaultRouter()
 router.register('api/users', UserViewSet)
@@ -62,6 +71,8 @@ router.register('api/ticket-options', TicketOptionViewSet)
 router.register('api/ticket-option-detail', TicketOptionDetailViewSet)
 router.register('api/categories', CategoryViewSet)
 router.register('api/types', TypeViewSet)
+router.register('api/payment-methods', StripeSavedPaymentMethodViewSet)
+router.register('api/connect-accounts', StripeConnectedUserViewSet)
 
 
 urlpatterns = [
@@ -76,7 +87,12 @@ urlpatterns = [
     path('api/get-free-events/', get_free_events, name="get_free_events"),
     path('api/get-connect-user-info/', get_connect_user_info, name="get_connect_user_info"),
     path('api/charge/', charge, name="charge"),
-    path('api/email-patrons/', send_email_to_patrons, name="send_email_to_patrons")
+    path('api/email-patrons/', send_email_to_patrons, name="send_email_to_patrons"),
+    path('api/events-by-category/', get_events_by_category, name="send_email_to_patrons"),
+    path('api/ticket-service/', include('tickets.urls')),
+    path('api/save-card/', save_card, name="save_card"),
+    path('api/payment-methods/<int:user_id>/', get_payment_methods, name="get_payment_methods"),
+    path('api/connected-accounts/<int:user_id>/', get_connected_user, name="get_payment_methods"),
 ]
 
 urlpatterns += router.urls

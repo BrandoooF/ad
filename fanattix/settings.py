@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'service',
     'stripeservice',
+    'qr_code',
 ]
 
 MIDDLEWARE = [

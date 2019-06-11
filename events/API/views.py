@@ -159,5 +159,15 @@ def send_email_to_patrons(request):
     return Response({'message': 'Hello Bruh'})
 
 
+@api_view(['GET'])
+def get_events_by_category(request):
+    category_id = request.query_params.get('categoryId')
+    print(category_id)
+    category = Category.objects.get(id=category_id)
+    events = category.get_events_in_category()
+    serializer = EventSerializer(events, many=True)
+    return Response({'events': serializer.data})
+
+
 
 

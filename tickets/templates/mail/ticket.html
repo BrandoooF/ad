@@ -6,3 +6,8 @@
 <p>{{ ticket_option.name }}</p>
 
 <small>Please Save this email as this ticket will grant you access to your event</small>
+
+{% load qr_code %}
+{% qr_from_text "ticketId" size="T" %}
+
+<p>Here is some more info</p>

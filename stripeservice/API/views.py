@@ -1,6 +1,7 @@
 from rest_framework import viewsets, status
 from accounts.models import User
-from ..models import StripeConnectedUser
+from ..models import StripeConnectedUser, StripeSavedPaymentMethod
+from .serializers import StripeSavedPaymentMethodSerializer, StripeConnectedUserSerializer
 from tickets.API.views import purchase_ticket
 from tickets.models import TicketOption
 from tickets.API.serializers import TicketSerializer
@@ -82,14 +83,49 @@ def charge(request):
 
 @api_view(['POST'],)
 def save_card(request):
-    token = request.data['token']
+    token = request.data['source_token']
     user_id = request.data['user_id']
     user = User.objects.get(id=user_id)
     user_email = user.email
+
+    # current_payment_method = StripeSavedPaymentMethod.objects.get(user_id=user_id)
 
     customer = stripe.Customer.create(
         source=token,
         email=user_email
     )
 
+    StripeSavedPaymentMethod.objects.create(
+        user=user,
+        token=token,
+        last4=customer['sources']['data'][0]['last4']  # get last4 from response
+    )
+
     return Response({'response': customer})
+
+
+class StripeConnectedUserViewSet(viewsets.ModelViewSet):
+    serializer_class = StripeConnectedUserSerializer
+    queryset = StripeConnectedUser.objects.all()
+
+
+@api_view(['GET'])
+def get_connected_user(request, user_id):
+    # user_id = request.query_params.get('user_id')
+    connected_user = StripeConnectedUser.objects.filter(user_id=user_id)
+    serializer = StripeConnectedUserSerializer(connected_user, many=True)
+    return Response({'connected_account': serializer.data})
+
+
+class StripeSavedPaymentMethodViewSet(viewsets.ModelViewSet):
+    serializer_class = StripeSavedPaymentMethodSerializer
+    queryset = StripeSavedPaymentMethod.objects.all()
+
+
+@api_view(['GET'])
+def get_payment_methods(request, user_id):
+    # user_id = request.query_params.get('user_id')
+    payment_methods = StripeSavedPaymentMethod.objects.filter(user_id=user_id)
+    serializer = StripeSavedPaymentMethodSerializer(payment_methods, many=True)
+    return Response({'payment_methods': serializer.data})
+

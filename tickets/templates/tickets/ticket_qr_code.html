@@ -1,0 +1,7 @@
+{% load qr_code %}
+<div style="text-align: center;">
+    <p>{{event.name}}</p>
+    <p><small>{{event.date}}</small></p>
+    <p><small>{{event.location}}</small></p>
+    {% qr_from_text ticketId size="S" %}
+</div>
