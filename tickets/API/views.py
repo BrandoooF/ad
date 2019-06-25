@@ -73,8 +73,15 @@ def get_purchased_tickets(request, user_id):
     from accounts.models import User
     user = User.objects.get(id=user_id)
     tickets = Ticket.objects.filter(user=user)
-
     serializer = TicketDetailSerializer(tickets, many=True)
     return Response(serializer.data)
+
+
+@api_view(['GET', ])
+def check_in(request, ticket_id):
+    ticket = Ticket.objects.get(id=ticket_id)
+    response_dict = ticket.check_in()
+    serializer = TicketDetailSerializer(response_dict['checkin'])
+    return Response({'response': serializer.data, 'accepted': response_dict['message']})
 
 

@@ -10,6 +10,8 @@ from rest_framework.authtoken.models import Token
 
 class User(AbstractUser):
     profile_img = models.ImageField(blank=True, null=True)
+    receives_emails = models.BooleanField(default=True)
+    receives_emails_from_organizers = models.BooleanField(default=True)
 
     def get_my_events(self):
         from events.models import Event

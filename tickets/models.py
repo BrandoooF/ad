@@ -71,10 +71,20 @@ class Ticket(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     url = models.URLField(null=True, blank=True)
     ticket_option = models.ForeignKey(TicketOption, on_delete=models.CASCADE, blank=True, null=True)
+    checked_in = models.BooleanField(default=False)
     # event_occurrence = models.ForeignKey(EventOccurrence, on_delete=models.CASCADE, blank=True, null=True)
 
-    '''def get_event_occurrence(self):
-        return self.event_occurrence'''
+    def check_in(self):
+        checkin, created = CheckIn.objects.get_or_create(ticket=self)
+        if created:
+            created.save()
+            self.checked_in = True
+            response_dict = {'checkin': created, 'accepted': True}
+            return response_dict
+        if checkin:
+            self.checked_in = True
+            response_dict = {'checkin': checkin, 'accepted': False}
+            return response_dict
 
     def get_ticket_option(self):
         return self.ticket_option
@@ -88,5 +98,14 @@ class Ticket(models.Model):
 
     def __str__(self):
         return "%s %s" % (self.user.first_name, self.user.last_name)
+
+
+class CheckIn(models.Model):
+    date = models.DateTimeField(auto_now=True)
+    ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return "%s - %s", self.ticket.ticket_option.name, self.date
+
 
 

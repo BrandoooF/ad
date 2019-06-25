@@ -12,6 +12,7 @@ def convert_and_save_image(img_data, img_name):
     img_name = img_name.replace(" ", "-")
     img_data = ContentFile(base64.b64decode(imgstr),
                            name=img_name + "." + ext)  # You can save this as file instance.
+    print('IMAGE CONVERTED /////')
     return img_data
 
 

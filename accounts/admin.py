@@ -5,7 +5,7 @@ from .models import User, UserProfile
 # Register your models here.
 
 UserAdmin.fieldsets += (
-    ('FX Status', {'fields': ('profile_img',)}),
+    ('FX Status', {'fields': ('profile_img', 'receives_emails', 'receives_emails_from_organizers')}),
 )
 
 

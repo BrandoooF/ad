@@ -31,20 +31,26 @@ class EventViewSet(viewsets.ModelViewSet):
     queryset = Event.objects.all()
 
     def create(self, request, *args, **kwargs):
-        print(request.data)
-        if hasattr(request.data, 'image'):
-            if request.data['image'] is not None:  # If an image string in base64 is present convert it to an image
-                img_data = convert_and_save_image(request.data['image'], request.data['name'])
-                request.data['image'] = img_data
-                print(img_data)
+        # print(request.data)
+        # if hasattr(request.data, 'image'):
+            # if request.data['image'] is not None:  # If an image string in base64 is present convert it to an image
+        try:
+            img_data = convert_and_save_image(request.data['image'], request.data['name'])
+            request.data['image'] = img_data
+            print('Should have run')
+            # print(img_data)
 
-        serializer = EventSerializer(data=request.data)
-        if serializer.is_valid():
-            obj = serializer.save()
+        except:  # means no image to process
+            pass
 
-            return Response({'event': serializer.data, 'message': 'Event Successfully Saved'})
+        finally:
+            serializer = EventSerializer(data=request.data)
+            if serializer.is_valid():
+                obj = serializer.save()
 
-        return Response({'errors': serializer.errors})
+                return Response({'event': serializer.data, 'message': 'Event Successfully Saved'})
+
+            return Response({'errors': serializer.errors})
 
     def update(self, request, *args, **kwargs):
         print(request.data['image'])
