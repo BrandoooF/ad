@@ -3,6 +3,7 @@ from ckeditor.fields import RichTextField
 
 from eventtools.models import BaseEvent, BaseOccurrence
 from accounts.models import User
+from .managers import EventsManager
 
 # Create your models here.
 
@@ -84,6 +85,10 @@ class Event(BaseEvent):
     creator = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
     is_inactive = models.BooleanField(default=True)
     is_draft = models.BooleanField(default=False)
+
+    # Manager Classes
+    objects = models.Manager()  # The default manager.
+    active_events = EventsManager()  # Get only active Events from custom manager
 
     def create_occurrence(self, creator_id, event_id, start, end, repeat):
         creator = User.objects.get(id=creator_id)

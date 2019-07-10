@@ -39,6 +39,7 @@ from events.API.views import (
     send_email_to_patrons,
     get_free_events,
     get_events_by_category,
+    get_events_nearby,
 )
 from tickets.API.views import (
     TicketViewSet,
@@ -47,6 +48,7 @@ from tickets.API.views import (
     TicketOptionDetailViewSet,
     purchase_ticket,
     get_purchased_tickets,
+    check_in
 )
 
 from stripeservice.API.views import (
@@ -93,7 +95,10 @@ urlpatterns = [
     path('api/save-card/', save_card, name="save_card"),
     path('api/payment-methods/<int:user_id>/', get_payment_methods, name="get_payment_methods"),
     path('api/connected-accounts/<int:user_id>/', get_connected_user, name="get_payment_methods"),
+    path('api/check-ticket/<int:ticket_id>/', check_in, name="check_in"),
+    path('api/events-near-location/', get_events_nearby, name="get_events_nearby"),
 ]
 
 urlpatterns += router.urls
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

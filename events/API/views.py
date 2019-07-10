@@ -9,7 +9,9 @@ from service import functions
 
 from service.functions import send_email_to_patrons
 
-from datetime import datetime
+# from datetime import datetime
+# from django.utils.timezone import datetime #important if using timezones
+from django.utils import timezone
 
 from .serializers import EventOccurrenceSerializer, EventSerializer, CategorySerializer, TypeSerializer
 from tickets.API.serializers import TicketSerializer
@@ -172,6 +174,17 @@ def get_events_by_category(request):
     category = Category.objects.get(id=category_id)
     events = category.get_events_in_category()
     serializer = EventSerializer(events, many=True)
+    return Response({'events': serializer.data})
+
+
+@api_view(['POST',])
+def get_events_nearby(request):
+    # print(request.data['location'])
+    location = request.data['location']
+    nearby_events = Event.filter_from_distance(miles=200, lat=location['latitude'], lng=location['longitude'])
+    # todo Figure out why event occurrence__start__gte not working
+    events = nearby_events.filter(is_inactive=False).filter(eventoccurrence__start__lte=timezone.now())
+    serializer = EventSerializer(nearby_events, many=True)
     return Response({'events': serializer.data})
 
 

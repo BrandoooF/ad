@@ -1,6 +1,12 @@
 from rest_framework import viewsets, serializers
 from rest_framework.response import Response
-from .serializers import TicketSerializer, TicketDetailSerializer, TicketOptionSerializer, TicketOptionDetailSerializer
+from .serializers import (
+    TicketSerializer,
+    TicketDetailSerializer,
+    TicketOptionSerializer,
+    TicketOptionDetailSerializer,
+    CheckInSerializer
+)
 from ..models import Ticket, TicketOption
 from rest_framework.decorators import api_view
 
@@ -79,9 +85,10 @@ def get_purchased_tickets(request, user_id):
 
 @api_view(['GET', ])
 def check_in(request, ticket_id):
-    ticket = Ticket.objects.get(id=ticket_id)
-    response_dict = ticket.check_in()
-    serializer = TicketDetailSerializer(response_dict['checkin'])
-    return Response({'response': serializer.data, 'accepted': response_dict['message']})
-
-
+    try:
+        ticket = Ticket.objects.get(id=ticket_id)
+        response_dict = ticket.check_in()  # Returns a checkin
+        serializer = CheckInSerializer(response_dict['checkin'])
+        return Response({'response': serializer.data, 'accepted': response_dict['accepted']})
+    except:
+        return Response({'response': None, 'accepted': False})

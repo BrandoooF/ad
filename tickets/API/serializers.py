@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from ..models import Ticket, TicketOption
+from ..models import Ticket, TicketOption, CheckIn
 from events.models import Event
 
 
@@ -14,6 +14,7 @@ class TicketDetailSerializer(serializers.ModelSerializer):
 
     def get_event_detail(self, obj):
         from events.API.serializers import EventSerializer
+        print(obj.id)
         event = obj.get_event_detail()
         serializer = EventSerializer(event)
         return serializer.data
@@ -56,5 +57,11 @@ class TicketOptionDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TicketOption
+        fields = '__all__'
+
+
+class CheckInSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CheckIn
         fields = '__all__'
 

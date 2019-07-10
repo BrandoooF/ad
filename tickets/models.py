@@ -75,15 +75,19 @@ class Ticket(models.Model):
     # event_occurrence = models.ForeignKey(EventOccurrence, on_delete=models.CASCADE, blank=True, null=True)
 
     def check_in(self):
-        checkin, created = CheckIn.objects.get_or_create(ticket=self)
-        if created:
-            created.save()
-            self.checked_in = True
-            response_dict = {'checkin': created, 'accepted': True}
-            return response_dict
-        if checkin:
-            self.checked_in = True
-            response_dict = {'checkin': checkin, 'accepted': False}
+        try:
+            checkin, created = CheckIn.objects.get_or_create(ticket=self)
+            if created:
+                created.save()
+                self.checked_in = True
+                response_dict = {'checkin': created, 'accepted': True}
+                return response_dict
+            if checkin:
+                self.checked_in = True
+                response_dict = {'checkin': checkin, 'accepted': False}
+                return response_dict
+        except:
+            response_dict = {'checkin': 'Ticket Not Found', 'accepted': False}
             return response_dict
 
     def get_ticket_option(self):

@@ -15,3 +15,4 @@ def get_ticket(request, ticket_id):
                       'ticket': ticket,
                       'event': event
                   })
+

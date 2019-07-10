@@ -1,7 +1,16 @@
+{% extends 'base.html' %}
+{% load static %}
 {% load qr_code %}
+
+{% block style %}
+  <link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}">
+{% endblock %}
+
+{% block content %}
 <div style="text-align: center;">
     <p>{{event.name}}</p>
     <p><small>{{event.date}}</small></p>
     <p><small>{{event.location}}</small></p>
     {% qr_from_text ticketId size="S" %}
 </div>
+{% endblock %}
