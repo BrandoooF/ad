@@ -40,6 +40,7 @@ from events.API.views import (
     get_free_events,
     get_events_by_category,
     get_events_nearby,
+    filter_events
 )
 from tickets.API.views import (
     TicketViewSet,
@@ -97,6 +98,7 @@ urlpatterns = [
     path('api/connected-accounts/<int:user_id>/', get_connected_user, name="get_payment_methods"),
     path('api/check-ticket/<int:ticket_id>/', check_in, name="check_in"),
     path('api/events-near-location/', get_events_nearby, name="get_events_nearby"),
+    path('api/filter-events/', filter_events, name="filter_events"),
 ]
 
 urlpatterns += router.urls

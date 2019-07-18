@@ -3,7 +3,9 @@ from ckeditor.fields import RichTextField
 
 from eventtools.models import BaseEvent, BaseOccurrence
 from accounts.models import User
-from .managers import EventsManager
+from .managers import ActiveManager
+
+import math
 
 # Create your models here.
 
@@ -83,12 +85,12 @@ class Event(BaseEvent):
     venue = models.TextField()
     image = models.ImageField(null=True, blank=True)
     creator = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
-    is_inactive = models.BooleanField(default=True)
+    is_inactive = models.BooleanField(default=False)
     is_draft = models.BooleanField(default=False)
 
     # Manager Classes
     objects = models.Manager()  # The default manager.
-    active_events = EventsManager()  # Get only active Events from custom manager
+    active_events = ActiveManager()  # Get only active Events from custom manager
 
     def create_occurrence(self, creator_id, event_id, start, end, repeat):
         creator = User.objects.get(id=creator_id)
@@ -113,17 +115,66 @@ class Event(BaseEvent):
         return self.type_obj
 
     @staticmethod
-    def filter_from_distance(miles, lat, lng):
-        degrees = (miles / 69)
+    def filter_from_distance(queryset, lat, lng):
+        '''degrees = (miles / 69)
         max_lat = lat + degrees
         min_lat = lat - degrees
 
-        max_lng = lng + ((90 - lat)*degrees)
-        min_lng = lng - ((90 - lat)*degrees)
+        max_lng = lng + degrees  #  ((90 - lat)*degrees)
+        min_lng = lng - degrees  #  ((90 - lat)*degrees)
 
         near_by = Event.objects.filter(lat__lte=max_lat, lat__gte=min_lat, lng__lte=max_lng, lng__gte=min_lng)
+        '''
+
+        near_by = queryset.filter()\
+            .annotate(dist=(lat - models.F('lat'))**2 + (lng - models.F('lng'))**2)\
+            .order_by('dist')
 
         return near_by
+
+    @staticmethod
+    def filter_events(data):
+        print(data)
+
+        # Filters on price options are free, paid, any
+        if 'price' in data:
+            price = data['price']
+            if price == 'free':
+                priced_events = Event.get_free_events()
+            elif price == 'paid':
+                priced_events = Event.get_paid_events()
+            else:
+                priced_events = Event.objects.all()
+        else:
+            priced_events = Event.objects.all()
+
+        # Filters Category
+        if 'category_name' in data:
+            categorized_events = priced_events.filter(category_obj__name=data['category_name'])
+        else:
+            categorized_events = priced_events
+
+        # Filters Type
+        if 'type_name' in data:
+            filtered_events = categorized_events.filter(type_obj__name=data['type_name'])
+        else:
+            filtered_events = categorized_events
+
+        # Orders By Location
+        if all(k in data for k in ("lat", "lng")):
+            nearby_events = Event.filter_from_distance(filtered_events, data['lat'], data['lng'])
+        else:
+            nearby_events = filtered_events
+
+        # Filters Name
+        if 'searchTerm' in data:
+            filtered_events = nearby_events.filter(name__icontains=data['searchTerm'])
+        else:
+            filtered_events = nearby_events
+
+        print(filtered_events)
+
+        return filtered_events
 
     def get_total_tickets_sold(self):
         from tickets.models import TicketOption, Ticket
@@ -131,6 +182,20 @@ class Event(BaseEvent):
         ticket_count = Ticket.objects.filter(ticket_option_id__in=ticket_option_ids).count()
         
         return ticket_count
+
+    @staticmethod
+    def get_free_events():
+        from tickets.models import TicketOption
+        event_ids = TicketOption.objects.filter(price__lte=0).values_list('event', flat=True)
+        events = Event.objects.filter(id__in=event_ids)
+        return events
+
+    @staticmethod
+    def get_paid_events():
+        from tickets.models import TicketOption
+        event_ids = TicketOption.objects.filter(price__gte=1).values_list('event', flat=True)
+        events = Event.objects.filter(id__in=event_ids)
+        return events
 
     def __str__(self):
         return self.name

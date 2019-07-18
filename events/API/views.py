@@ -1,11 +1,13 @@
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
+from rest_framework.pagination import PageNumberPagination
 from ..models import Event, EventOccurrence, Category, Type
 from tickets.models import Ticket
 from accounts.models import User
 from django.db.models import FloatField, F
 from service import functions
+from service.models import StandardPagination
 
 from service.functions import send_email_to_patrons
 
@@ -31,6 +33,7 @@ class TypeViewSet(viewsets.ModelViewSet):
 class EventViewSet(viewsets.ModelViewSet):
     serializer_class = EventSerializer
     queryset = Event.objects.all()
+    pagination_class = StandardPagination
 
     def create(self, request, *args, **kwargs):
         # print(request.data)
@@ -109,9 +112,7 @@ def search_events_by_name(request):
 
 @api_view(['GET', ])
 def get_free_events(request):
-    from tickets.models import TicketOption
-    event_ids = TicketOption.objects.filter(price__lte=0).values_list('event', flat=True)
-    events = Event.objects.filter(id__in=event_ids)
+    events = Event.get_free_events()
     serializer = EventSerializer(events, many=True)
     return Response(serializer.data)
 
@@ -179,13 +180,22 @@ def get_events_by_category(request):
 
 @api_view(['POST',])
 def get_events_nearby(request):
-    # print(request.data['location'])
+    print(request.data['location'])
     location = request.data['location']
-    nearby_events = Event.filter_from_distance(miles=200, lat=location['latitude'], lng=location['longitude'])
-    # todo Figure out why event occurrence__start__gte not working
-    events = nearby_events.filter(is_inactive=False).filter(eventoccurrence__start__lte=timezone.now())
-    serializer = EventSerializer(nearby_events, many=True)
+    nearby_events = Event.filter_from_distance(lat=location['latitude'], lng=location['longitude'])
+    # print(timezone.now())
+    # todo add .filter(is_inactive=False) below
+    events = Event.objects.filter(eventoccurrence__start__gte=timezone.now())
+    serializer = EventSerializer(events, many=True)
     return Response({'events': serializer.data})
+
+
+@api_view(['POST'])
+def filter_events(request):
+    events = Event.filter_events(request.data)
+    serializer = EventSerializer(events, many=True)
+    return Response(serializer.data)
+
 
 
 

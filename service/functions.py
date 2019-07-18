@@ -23,3 +23,5 @@ def send_email_to_patrons(subject, html_message, from_email, to_email):
     from_email = 'brandon.f.fallings@gmail.com'
     to_email = to_email # to email is already a list
     send_mail(subject, plain_message, from_email, to_email, html_message=html_message)  # send the email
+
+
