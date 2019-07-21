@@ -134,10 +134,11 @@ class Event(BaseEvent):
 
     @staticmethod
     def filter_events(data):
+        print('##########START###########')
         print(data)
 
         # Filters on price options are free, paid, any
-        if 'price' in data:
+        if 'price' in data and data['price'] is not None:
             price = data['price']
             if price == 'free':
                 priced_events = Event.get_free_events()
@@ -145,34 +146,56 @@ class Event(BaseEvent):
                 priced_events = Event.get_paid_events()
             else:
                 priced_events = Event.objects.all()
+                print('price filter')
+                print(priced_events)
         else:
             priced_events = Event.objects.all()
 
         # Filters Category
-        if 'category_name' in data:
+        if 'category_name' in data and data['category_name'] != 'null' and data['category_name'] is not None:
+            # print(priced_events)
             categorized_events = priced_events.filter(category_obj__name=data['category_name'])
+            print('category is %s and YES FILTERED' % data['category_name'])
+            print(categorized_events)
         else:
             categorized_events = priced_events
+            print('categories id %s and NOT FILTERED')
+            print(categorized_events)
+            print('categories')
 
         # Filters Type
-        if 'type_name' in data:
-            filtered_events = categorized_events.filter(type_obj__name=data['type_name'])
+        if 'type_name' in data and data['type_name'] != 'null' and data['type_name'] is not None:
+            typed_events = categorized_events.filter(type_obj__name=data['type_name'])
+            print('type is %s and YES FILTERED' % data['type_name'])
+            print(typed_events)
         else:
-            filtered_events = categorized_events
+            typed_events = categorized_events
+            print('types NOT filtered')
 
         # Orders By Location
         if all(k in data for k in ("lat", "lng")):
-            nearby_events = Event.filter_from_distance(filtered_events, data['lat'], data['lng'])
+            if data['lat'] is not None and data['lng'] is not None:
+                print('location is %s, %s YES FILTERED' % (data['lat'], data['lng']))
+                nearby_events = Event.filter_from_distance(typed_events, data['lat'], data['lng'])
+                print(nearby_events)
+            else:
+                print('location NOT FILTERED')
+                nearby_events = typed_events
+                print(nearby_events)
         else:
-            nearby_events = filtered_events
+            print('location NOT FILTERED')
+            nearby_events = typed_events
+            print(nearby_events)
 
         # Filters Name
-        if 'searchTerm' in data:
+        if 'searchTerm' in data and data['searchTerm'] is not None:
+            print('name is %s and YES filtered' % data['searchTerm'])
             filtered_events = nearby_events.filter(name__icontains=data['searchTerm'])
+            print(filtered_events)
         else:
             filtered_events = nearby_events
-
-        print(filtered_events)
+            print('name NOT filtered DONE')
+            print(filtered_events)
 
         return filtered_events
 
